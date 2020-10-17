@@ -1,6 +1,7 @@
 import flask
 from flask import request, jsonify
 from helpers import error, warning, success
+import sentiment
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = False
@@ -91,5 +92,14 @@ def echo():
     content = request.get_json()
     print(content)
     return jsonify(content)
+
+@app.route('/api/v1/tweets/happytest', methods=['GET'])
+def get_happy_tweets_test():
+    if 'q' in request.args:
+        query = request.args['q']
+    else:
+        query = '#UltraHacks'
+    tweets = sentiment.get_happy_tweets(query)
+    return jsonify(tweets)
 
 app.run(host='0.0.0.0', port=5000)
