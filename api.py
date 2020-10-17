@@ -76,4 +76,20 @@ def search_tweet():
 
     return jsonify(results)
 
+@app.route('/api/v1/tweets/gethappy', methods=['POST'])
+def get_happy():
+    tweets = request.get_json()
+    happyTweets = []
+    for tweet in tweets:
+        if tweet['polarity'] == 'positive':
+            happyTweets.append(tweet)
+
+    return jsonify(happyTweets)
+
+@app.route('/api/v1/echo', methods=['POST'])
+def echo():
+    content = request.get_json()
+    print(content)
+    return jsonify(content)
+
 app.run(host='0.0.0.0', port=5000)
