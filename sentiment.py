@@ -109,7 +109,7 @@ def analyze_tweets(fetched_tweets, status=False):
 def get_happy_tweets(query = '#UltraHacks'):
     api = TwitterClient()
     tweets = api.get_tweets(query = query, count = 10)
-    tweets = tweets[:1][0]
+    tweets = tweets[:3]
     return tweets
 
 def filter_happy_tweets(tweets):
