@@ -57,56 +57,52 @@ class TwitterClient(object):
   
     def get_tweets(self, query, count = 10): 
         ''' 
-        Main function to fetch tweets and parse them. 
+        Main function to fetch tweets. 
         '''
-        # empty list to store parsed tweets 
-        tweets = [] 
   
         try: 
             # call twitter api to fetch tweets 
-            fetched_tweets = self.api.search(q = query, count = count) 
-
-            # parsing tweets one by one 
-            for tweet in fetched_tweets: 
-                # empty dictionary to store required params of a tweet 
-                tweet = tweet
-                
-                # saving sentiment of tweet 
-                #parsed_tweet['sentiment'] = self.get_tweet_sentiment(tweet.text) 
-                tweet.sentiment, tweet.polarity = self.get_tweet_sentiment(tweet.text)
-
-                tweet._json['sentiment'] = tweet.sentiment
-                tweet._json['polarity'] = tweet.polarity
-  
-                # appending parsed tweet to tweets list 
-                if tweet.retweet_count > 0: 
-                    # if tweet has retweets, ensure that it is appended only once 
-                    if tweet not in tweets: 
-                        tweets.append(tweet) 
-                else: 
-                    tweets.append(tweet) 
-
-            tweets = sorted(tweets, key = lambda i: i.polarity, reverse=True)
-
-            # for tweet in tweets:
-            #     print(json.dumps(tweet._json, indent=4))
-  
-            # return parsed tweets 
-            for tweet in tweets:
-                printTweet = {}
-                printTweet['text'] = tweet.text
-                printTweet['polarity'] = tweet.polarity
-                printTweet['sentiment'] = tweet.sentiment
-                #print(json.dumps(printTweet, indent=4))
-
-            tweetsJsonList = []
-            for tweet in tweets:
-                tweetsJsonList.append(tweet._json)
-            return tweetsJsonList
+            fetched_tweets = self.api.search(q = query, count = count)
+            tweets = analyze_tweets(fetched_tweets, status=True)
+            return tweets
+            
   
         except tweepy.TweepError as e: 
             # print error (if any) 
             print("Error : " + str(e)) 
+
+def analyze_tweets(fetched_tweets, status=False):
+    api = TwitterClient()
+    tweets = []
+
+    fetched_tweets_json = []
+    if status:
+        for tweet in fetched_tweets:
+            fetched_tweets_json.append(tweet._json)
+    else:
+        fetched_tweets_json = fetched_tweets
+
+    for tweet in fetched_tweets_json: 
+        # saving sentiment of tweet 
+        tweet['sentiment'], tweet['polarity'] = api.get_tweet_sentiment(tweet['text'])
+
+        # tweet._json['sentiment'] = tweet['sentiment']
+        # tweet._json['polarity'] = tweet['polarity']
+
+        # appending parsed tweet to tweets list 
+        if tweet['retweet_count'] > 0: 
+            # if tweet has retweets, ensure that it is appended only once 
+            if tweet not in tweets: 
+                tweets.append(tweet) 
+        else: 
+            tweets.append(tweet) 
+
+    tweets = sorted(tweets, key = lambda i: i['polarity'], reverse=True)
+
+    tweetsJsonList = []
+    for tweet in tweets:
+        tweetsJsonList.append(tweet)
+    return tweetsJsonList
 
 
 
@@ -115,6 +111,11 @@ def get_happy_tweets(query = '#UltraHacks'):
     tweets = api.get_tweets(query = query, count = 10)
     tweets = tweets[:3]
     return tweets
+
+def filter_happy_tweets(tweets):
+    classified_tweets = analyze_tweets(tweets)
+    happy_tweets = classified_tweets[:3]
+    return happy_tweets
 
   
 def main(): 

@@ -102,4 +102,10 @@ def get_happy_tweets_test():
     tweets = sentiment.get_happy_tweets(query)
     return jsonify(tweets)
 
+@app.route('/api/v1/tweets/filterhappy', methods=['POST'])
+def filter_happy_tweets():
+    tweets = request.get_json()
+    happy_tweets = sentiment.filter_happy_tweets(tweets)
+    return jsonify(happy_tweets)
+
 app.run(host='0.0.0.0', port=5000)
